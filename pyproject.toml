@@ -13,4 +13,4 @@ license = { text = "MIT" }
 distribution = false
 
 [tool.pdm.scripts]
-ag = "python src/ag-cli/main.py"
+ag = "python src/main.py"
