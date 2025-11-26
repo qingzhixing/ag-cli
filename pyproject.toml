@@ -1,0 +1,16 @@
+[project]
+name = "ag-cli"
+version = "0.1.0"
+description = "Default template for PDM package"
+authors = [{ name = "qingzhixing", email = "qzsqqmail@qq.com" }]
+dependencies = ["openai>=2.8.1", "python-dotenv>=1.2.1"]
+requires-python = "==3.14.*"
+readme = "README.md"
+license = { text = "MIT" }
+
+
+[tool.pdm]
+distribution = false
+
+[tool.pdm.scripts]
+ag-cli = "python src/ag-cli/main.py"
