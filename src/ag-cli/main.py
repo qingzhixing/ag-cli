@@ -24,60 +24,101 @@ def list_models():
     console.print(table)
 
 
+def manage_context(conversation_history, max_tokens=120000):
+    """
+    管理对话上下文，防止超过模型限制
+    简单的实现：保留最近N轮对话
+    """
+    # 如果对话历史太长，保留最近的对话
+    if len(conversation_history) > 20:  # 保留最近10轮对话（20条消息）
+        # 保留系统消息和最近的对话
+        system_msg = conversation_history[0]  # 系统消息
+        recent_history = conversation_history[-18:]  # 最近9轮对话
+        return [system_msg] + recent_history
+    return conversation_history
+
+
 def continuous_chat(client, console, model=None):
     """连续对话模式"""
     conversation_history = []
-    
+
     # 添加系统提示，要求默认使用中文
     system_prompt = "请使用中文进行回答。"
     conversation_history.append({"role": "system", "content": system_prompt})
-    
-    console.print("[bold green]进入连续对话模式，输入 'exit' 或 '退出' 结束对话[/bold green]")
-    console.print("[dim]输入 'clear' 或 '清除' 清空对话历史[/dim]\n")
-    
+
+    console.print("[bold green]进入连续对话模式[/bold green]")
+    console.print("[dim]输入 '.' 单独一行结束多行输入[/dim]")
+    console.print("[dim]输入 '.exit' 结束对话[/dim]")
+    console.print("[dim]输入 '.clear' 清空对话历史[/dim]")
+    console.print("[dim]输入 '.history' 查看对话历史[/dim]\n")
+
     while True:
         try:
             # 获取用户输入
-            console.print("[bold cyan]您:[/bold cyan] ", end="")
+            console.print("[bold cyan]您:[/bold cyan] ")
             lines = []
             while True:
                 try:
                     line = input()
-                    if line.strip() == ".":
+                    # 检查特殊命令
+                    if line.strip() == ".exit":
+                        console.print("[yellow]结束对话。[/yellow]")
+                        return
+                    elif line.strip() == ".clear":
+                        conversation_history = [
+                            {"role": "system", "content": "请使用中文进行回答。"}
+                        ]
+                        console.print("[green]对话历史已清空。[/green]")
+                        break
+                    elif line.strip() == ".history":
+                        console.print("\n[bold yellow]对话历史:[/bold yellow]")
+                        for i, msg in enumerate(
+                            conversation_history[1:], 1
+                        ):  # 跳过系统消息
+                            role = "用户" if msg["role"] == "user" else "AI"
+                            content_preview = (
+                                msg["content"][:100] + "..."
+                                if len(msg["content"]) > 100
+                                else msg["content"]
+                            )
+                            console.print(f"  {i}. {role}: {content_preview}")
+                        console.print()
+                        break
+                    elif line.strip() == ".":
                         break
                     lines.append(line)
                 except EOFError:
                     break
+
+            # 如果没有实际内容，继续循环
+            if not lines and not any(
+                cmd in [".clear", ".history"]
+                for cmd in [line.strip() for line in lines if line.strip()]
+            ):
+                continue
+
+            # 构建用户输入
             user_input = "\n".join(lines)
 
+            # 跳过空输入
             if not user_input.strip():
-                continue
-                
-            # 退出命令
-            if user_input.lower() in ['exit', '退出', 'quit']:
-                console.print("[yellow]结束对话。[/yellow]")
-                break
-                
-            # 清空历史命令
-            if user_input.lower() in ['clear', '清除', 'reset']:
-                conversation_history = [
-                    {"role": "system", "content": "请使用中文进行回答。"}
-                ]
-                console.print("[green]对话历史已清空。[/green]")
                 continue
 
             # 添加到对话历史
             conversation_history.append({"role": "user", "content": user_input})
 
             try:
+                # 管理上下文长度
+                managed_history = manage_context(conversation_history)
+
                 # 显示加载状态
                 with console.status("[bold green]思考中...", spinner="dots"):
-                    # 调用修改后的chat_completion方法
-                    response = client.chat_completion(conversation_history, model=model)
+                    # 调用API
+                    response = client.chat_completion(managed_history, model=model)
 
                 # 显示回答
                 console.print("\n[bold green]AI:[/bold green]")
-                
+
                 if response is None:
                     console.print("[yellow]模型返回了空响应。[/yellow]")
                 else:
@@ -85,14 +126,17 @@ def continuous_chat(client, console, model=None):
                     markdown = Markdown(response)
                     console.print(markdown)
                     console.print()  # 空行
-                    
+
                     # 将AI回复添加到对话历史
-                    conversation_history.append({"role": "assistant", "content": response})
+                    conversation_history.append(
+                        {"role": "assistant", "content": response}
+                    )
 
             except Exception as e:
                 console.print(f"[red]API调用错误: {str(e)}[/red]")
                 # 移除最后一条用户消息，因为处理失败了
-                conversation_history.pop()
+                if conversation_history and conversation_history[-1]["role"] == "user":
+                    conversation_history.pop()
 
         except KeyboardInterrupt:
             console.print("\n[yellow]结束对话。[/yellow]")
@@ -149,10 +193,11 @@ def main():
         help="List all supported model aliases",
     )
     parser.add_argument(
-        "--continue", "-c",
+        "--continue",
+        "-c",
         action="store_true",
         dest="continuous",
-        help="Enable continuous conversation mode"
+        help="Enable continuous conversation mode",
     )
 
     args = parser.parse_args()
@@ -173,8 +218,8 @@ def main():
             # 如果有命令行问题，先处理第一个问题
             first_question = " ".join(args.question)
             single_chat(client, console, first_question, args.model)
-            console.print("\n" + "="*50 + "\n")
-        
+            console.print("\n" + "=" * 50 + "\n")
+
         # 进入连续对话模式
         continuous_chat(client, console, args.model)
     else:
