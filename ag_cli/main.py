@@ -1,9 +1,9 @@
 # main.py
 import argparse
-from api_client import DeepSeekClient
+from .api_client import DeepSeekClient
 from rich.console import Console
-from utils.models import list_models
-from cli.commands import continuous_chat, single_chat
+from .utils.models import list_models
+from .cli.commands import continuous_chat, single_chat
 
 
 def main():

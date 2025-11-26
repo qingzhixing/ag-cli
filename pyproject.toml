@@ -3,14 +3,47 @@ name = "ag-cli"
 version = "0.1.0"
 description = "agent-cli 多大语言模型命令行交互应用"
 authors = [{ name = "qingzhixing", email = "qzsqqmail@qq.com" }]
-dependencies = ["openai>=2.8.1", "python-dotenv>=1.2.1", "rich>=14.2.0", "tenacity>=9.1.2"]
-requires-python = "==3.14.*"
+dependencies = [
+	"openai>=2.8.1",
+	"python-dotenv>=1.2.1",
+	"rich>=14.2.0",
+	"tenacity>=9.1.2",
+]
+requires-python = ">=3.8"
 readme = "README.md"
 license = { text = "MIT" }
 
-
 [tool.pdm]
-distribution = false
+distribution = true
 
+# 修复入口点配置 - 使用正确的包路径
+[project.scripts]
+ag = "ag_cli.main:main"
+
+# 简化的PDM脚本配置
 [tool.pdm.scripts]
-ag = "python src/main.py"
+# 主命令 - 使用包模块方式运行
+ag = "python -m ag_cli"
+
+# 构建和安装相关脚本
+install = { cmd = "python scripts/install.py", help = "安装项目" }
+build = { cmd = "pdm build", help = "构建包" }
+clean = { cmd = "rmdir /s /q dist build *.egg-info 2>nul || rm -rf dist build *.egg-info", help = "清理构建文件" }
+
+# 添加构建系统配置
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+# 修复打包配置
+[tool.pdm.build]
+package-dir = "src"
+includes = ["src/**/*.py", "README.md", "pyproject.toml", "*.env*"]
+excludes = [
+	"**/__pycache__/**",
+	"**/*.pyc",
+	"**/.pytest_cache/**",
+	"**/.mypy_cache/**",
+	"**/.ruff_cache/**",
+	"**/.git/**",
+]

@@ -9,6 +9,7 @@ AG-CLI 是一个基于 Python 的命令行工具，支持与多个大语言模�
 - 🎨 使用 Rich 库提供美观的终端界面
 - ⚙️ 灵活的模型选择和配置
 - 🔐 安全的 API 密钥管理
+- 📦 一键安装，跨平台支持
 
 ## 预览
 
@@ -21,33 +22,48 @@ AG-CLI 是一个基于 Python 的命令行工具，支持与多个大语言模�
 
 ## 环境要求
 
-- Python 3.14.*
+- Python 3.8 或更高版本
 - PDM (Python 包管理器)
 
-## 安装步骤
+## 快速安装
 
-### 1. 克隆项目
+### 方法1: 使用PDM脚本（推荐）
 
 ```bash
-git clone <repository-url>
-cd ag-cli
+# 安装项目
+pdm run install
+
+# 验证安装
+ag --help
 ```
 
-### 2. 安装依赖
-
-项目使用 PDM 管理依赖，请确保已安装 PDM：
+### 方法2: 直接运行Python脚本
 
 ```bash
-pip install pdm
+# 安装项目
+python scripts/install.py
+
+# 验证安装
+ag --help
 ```
 
-然后安装项目依赖：
+### 方法3: 手动安装
 
 ```bash
+# 安装依赖
 pdm install
+
+# 构建包
+pdm build
+
+# 安装包
+pip install dist/ag-cli-0.1.0-py3-none-any.whl
+
+# 验证安装
+ag --help
 ```
 
-### 3. 配置环境变量
+## 配置环境变量
 
 复制环境变量模板文件：
 
@@ -67,16 +83,10 @@ DASHSCOPE_API_KEY=sk-your-actual-api-key-here
 
 ### 基本使用
 
-项目提供了 `ag` 命令别名，可以通过以下方式运行：
+安装完成后，你可以直接在命令行使用 `ag` 命令：
 
 ```bash
-pdm run ag 你好，请介绍一下你自己
-```
-
-或者直接运行 Python 脚本：
-
-```bash
-python src/main.py 你好，请介绍一下你自己
+ag "你好，请介绍一下你自己"
 ```
 
 ### 命令行参数
@@ -93,29 +103,40 @@ python src/main.py 你好，请介绍一下你自己
 
 ```bash
 # 使用默认模型进行单次对话
-pdm run ag "Python 中的列表和元组有什么区别？"
+ag "Python 中的列表和元组有什么区别？"
 
 # 指定特定模型
-pdm run ag -m "qwen-turbo" "请解释一下机器学习的基本概念"
+ag -m "qwen-turbo" "请解释一下机器学习的基本概念"
 ```
 
 #### 连续对话模式
 
 ```bash
 # 进入连续对话模式
-pdm run ag -c
+ag -c
 
 # 带初始问题的连续对话
-pdm run ag -c "请帮我分析这段代码"
+ag -c "请帮我分析这段代码"
 ```
 
 #### 查看支持的模型
 
 ```bash
-pdm run ag -l
+ag -l
 ```
 
-## 项目结构
+## 开发命令
+
+```bash
+# 查看所有PDM脚本
+pdm run --list
+
+# 构建包
+pdm run build
+
+# 清理构建文件
+pdm run clean
+```
 
 ## 开发说明
 
@@ -147,6 +168,18 @@ python -m pdb src/main.py "测试问题"
 
    - 确保已运行 `pdm install` 安装依赖
    - 检查虚拟环境是否正确激活
+4. **PDM 未安装**
+
+   ```bash
+   pip install pdm
+   ```
+
+5. **Python 版本问题**
+
+   ```bash
+   python --version
+   # 确保版本 >= 3.8
+   ```
 
 ## 许可证
 

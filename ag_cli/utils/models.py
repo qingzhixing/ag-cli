@@ -1,7 +1,7 @@
 # utils/models.py
 from rich.console import Console
 from rich.table import Table
-from config import load_config
+from ag_cli.config import load_config
 
 
 def list_models():

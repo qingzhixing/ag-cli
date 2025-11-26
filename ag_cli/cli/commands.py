@@ -1,7 +1,7 @@
 # cli/commands.py
-from chat.interface import ChatInterface
-from chat.history_manager import HistoryManager
-from chat.input_handler import get_user_input
+from ag_cli.chat.interface import ChatInterface
+from ag_cli.chat.history_manager import HistoryManager
+from ag_cli.chat.input_handler import get_user_input
 
 
 def continuous_chat(client, console, model=None, initial_question=None):

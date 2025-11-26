@@ -1,6 +1,6 @@
 import httpx
 from openai import OpenAI
-from config import load_config
+from .config import load_config
 from tenacity import retry, stop_after_attempt, wait_exponential
 import time
 from functools import wraps
