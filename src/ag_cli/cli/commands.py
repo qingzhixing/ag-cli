@@ -118,7 +118,7 @@ def config_command(args):
 
     if args.action == "set":
         if not args.api_key:
-            console.print("[red]✖️ 请使用 --api-key API密钥[/red]")
+            console.print("[red]✖️ 请使用 --api-key 参数指定API密钥[/red]")
             return
         result = set_api_key(args.api_key)
         console.print(f"[green]✅ {result}[/green]")

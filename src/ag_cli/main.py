@@ -3,7 +3,21 @@ import argparse
 from .api_client import DeepSeekClient
 from rich.console import Console
 from .utils.models import list_models
-from .cli.commands import continuous_chat, single_chat, config_command
+from .cli.commands import continuous_chat, single_chat
+
+
+def config_handler(args):
+    """处理配置选项"""
+    from .cli.commands import config_command
+
+    # 创建一个简单的命名空间对象来模拟原来的args
+    class ConfigArgs:
+        def __init__(self, action, api_key=None):
+            self.action = action
+            self.api_key = api_key
+
+    config_args = ConfigArgs(args.config_action, args.api_key)
+    config_command(config_args)
 
 
 def main():
@@ -12,26 +26,15 @@ def main():
         description="Multi LLM Chat In Console.(Using DashScope API)"
     )
 
-    # 添加子命令
-    subparsers = parser.add_subparsers(dest="command", help="可用命令")
-
-    # 配置命令
-    config_parser = subparsers.add_parser("config", help="管理配置")
-    config_parser.add_argument(
-        "action",
-        choices=["set", "get", "clear"],
-        help="配置操作: set(设置), get(查看), clear(清除)",
-    )
-    config_parser.add_argument("--api-key", type=str, help="API密钥（仅set操作需要）")
-
-    # 模型列表命令
-    list_parser = subparsers.add_parser("list-models", help="列出支持的模型")
-
-    # 保持向后兼容：直接输入问题作为主命令
+    # 主要参数：问题
     parser.add_argument("question", nargs="*", help="Input question for AI")
+
+    # 模型选项
     parser.add_argument(
         "--model", "-m", type=str, default=None, help="Model name or alias"
     )
+
+    # 连续对话选项
     parser.add_argument(
         "--continue",
         "-c",
@@ -39,6 +42,20 @@ def main():
         dest="continuous",
         help="Enable continuous conversation mode",
     )
+
+    # 配置管理选项
+    config_group = parser.add_argument_group("配置管理")
+    config_group.add_argument(
+        "--config",
+        choices=["set", "get", "clear"],
+        dest="config_action",
+        help="配置操作: set(设置), get(查看), clear(清除)",
+    )
+    config_group.add_argument(
+        "--api-key", type=str, help="API密钥（仅--config set时使用）"
+    )
+
+    # 模型列表选项
     parser.add_argument(
         "--list-models",
         "-l",
@@ -47,25 +64,19 @@ def main():
     )
 
     args = parser.parse_args()
-
     console = Console()
+
+    # 处理配置命令（优先级最高）
+    if args.config_action:
+        config_handler(args)
+        return
 
     # 如果请求列出模型，则显示模型列表并退出
     if args.list_models:
         list_models()
         return
 
-    # 处理配置命令
-    if args.command == "config":
-        config_command(args)
-        return
-
-    # 处理模型列表命令
-    if args.command == "list-models":
-        list_models()
-        return
-
-    # 主聊天功能（保持原有简洁格式）
+    # 主聊天功能
     client = DeepSeekClient()
 
     # 判断是否启用连续对话
