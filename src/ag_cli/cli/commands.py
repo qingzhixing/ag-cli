@@ -100,3 +100,58 @@ def single_chat(client, console, question, model=None):
 
     except Exception as e:
         console.print(f"[red]✖️ 错误: {str(e)}[/red]")
+
+
+def config_command(args):
+    """配置管理命令"""
+    from ag_cli.config import (
+        set_api_key,
+        get_api_key,
+        clear_api_key,
+        get_config_file_path,
+        get_config_dir_path,
+        config_exists,
+    )
+    from rich.console import Console
+
+    console = Console()
+
+    if args.action == "set":
+        if not args.api_key:
+            console.print("[red]✖️ 请使用 --api-key API密钥[/red]")
+            return
+        result = set_api_key(args.api_key)
+        console.print(f"[green]✅ {result}[/green]")
+
+        # 显示配置文件信息
+        console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
+        console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
+
+    elif args.action == "get":
+        api_key = get_api_key()
+        if api_key:
+            # 显示部分密钥，保护敏感信息
+            masked_key = api_key[:8] + "*" * (len(api_key) - 12) + api_key[-4:]
+            console.print(f"[yellow]🔑 当前API密钥: {masked_key}[/yellow]")
+
+            # 显示配置文件信息
+            if config_exists():
+                console.print(
+                    f"[green]✅ 配置文件存在: {get_config_file_path()}[/green]"
+                )
+            else:
+                console.print("[yellow]⚠️ 配置文件不存在，使用系统环境变量[/yellow]")
+
+            console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
+        else:
+            console.print("[red]✖️ 未设置API密钥[/red]")
+            console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
+            console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
+
+    elif args.action == "clear":
+        result = clear_api_key()
+        console.print(f"[green]✅ {result}[/green]")
+
+        # 显示配置文件信息
+        console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
+        console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
