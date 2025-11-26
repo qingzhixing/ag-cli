@@ -40,6 +40,9 @@ def main():
             )
         )
 
+        # 默认中文回答
+        question += " (请用中文回答我的问题，但是如果我的需求是翻译，则不需要强制中文)"
+
         # 显示加载状态
         with console.status("[bold green]思考中...", spinner="dots"):
             # 获取完整响应
