@@ -11,15 +11,15 @@ class DeepSeekClient:
             base_url=self.config["base_url"],
         )
 
-    def stream_chat(self, message, model=None):
-        """流式聊天接口"""
+    def chat(self, message, model=None):
+        """非流式聊天接口"""
         try:
-            stream = self.client.chat.completions.create(
+            response = self.client.chat.completions.create(
                 model=model or self.config["model"],
                 messages=[{"role": "user", "content": message}],
-                stream=True,
+                stream=False,
             )
-            return stream
+            return response.choices[0].message.content
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 raise ValueError("DASHSCOPE_API_KEY is invalid")
