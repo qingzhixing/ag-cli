@@ -3,6 +3,7 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.live import Live
 from rich import print as rprint
+from rich.markdown import Markdown
 from stream_processor import StreamProcessor
 
 
@@ -49,18 +50,18 @@ class RichOutputManager:
 
                     if code_block:
                         code_blocks.append(code_block)
+                        # 立即显示完成的代码块
+                        self.console.print(code_block)
+                        self.console.print()  # 代码块后添加空行
 
                     if needs_update:
                         live.update(processor.regular_text)
-
-        # 显示所有代码块
-        for code_block in code_blocks:
-            self.console.print(code_block)
 
         # 处理最终可能未完成的代码块
         final_code_block = processor.get_final_code_block()
         if final_code_block:
             self.console.print(final_code_block)
+            self.console.print()
 
         # 返回完整响应文本
         full_response = processor.get_final_regular_text().plain
@@ -72,4 +73,15 @@ class RichOutputManager:
 
     def display_error(self, error_message: str):
         """显示错误信息"""
-        self.console.print(f"[red]错误: {error_message}[/red]")
+        self.console.print(
+            Panel.fit(
+                f"[red]{error_message}[/red]",
+                title="[bold red]错误[/bold red]",
+                border_style="red",
+            )
+        )
+
+    def display_raw_markdown(self, text: str):
+        """将文本作为 Markdown 显示（备用方案）"""
+        markdown = Markdown(text)
+        self.console.print(markdown)

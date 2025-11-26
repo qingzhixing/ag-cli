@@ -10,7 +10,12 @@ class DeepSeekChatApp:
         self.client = DeepSeekClient()
         self.output_manager = RichOutputManager()
 
-    def run(self, question: Optional[str] = None, model: Optional[str] = None):
+    def run(
+        self,
+        question: Optional[str] = None,
+        model: Optional[str] = None,
+        raw_markdown: bool = False,
+    ):
         """运行聊天应用"""
         # 获取问题
         if not question:
@@ -26,7 +31,19 @@ class DeepSeekChatApp:
                 stream = self.client.stream_chat(question, model=model)
 
             # 处理并显示响应
-            self.output_manager.display_stream_response(stream, question)
+            if raw_markdown:
+                # 备用方案：收集完整响应后作为 Markdown 显示
+                full_response = ""
+                for chunk in stream:
+                    if (
+                        hasattr(chunk.choices[0].delta, "content")
+                        and chunk.choices[0].delta.content is not None
+                    ):
+                        full_response += chunk.choices[0].delta.content
+                self.output_manager.display_raw_markdown(full_response)
+            else:
+                # 主要方案：流式输出
+                self.output_manager.display_stream_response(stream, question)
 
         except Exception as e:
             self.output_manager.display_error(str(e))
