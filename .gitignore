@@ -24,6 +24,7 @@ MANIFEST
 # PDM
 .pdm-python
 .pdm.toml
+.dist/
 
 # pytest
 .pytest_cache/

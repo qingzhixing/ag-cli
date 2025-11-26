@@ -16,14 +16,14 @@ license = { text = "MIT" }
 [tool.pdm]
 distribution = true
 
-# 修复入口点配置 - 使用正确的包路径
+# 入口点配置 - 确保全局安装时ag命令可用
 [project.scripts]
 ag = "ag_cli.main:main"
 
 # 简化的PDM脚本配置
 [tool.pdm.scripts]
-# 主命令 - 使用包模块方式运行
-ag = "python -m ag_cli"
+# 主命令
+ag = "python src/main.py"
 
 # 构建和安装相关脚本
 install = { cmd = "python scripts/install.py", help = "安装项目" }
@@ -35,7 +35,7 @@ clean = { cmd = "rmdir /s /q dist build *.egg-info 2>nul || rm -rf dist build *.
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"
 
-# 修复打包配置
+# 打包配置
 [tool.pdm.build]
 package-dir = "src"
 includes = ["src/**/*.py", "README.md", "pyproject.toml", "*.env*"]
