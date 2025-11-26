@@ -1,5 +1,4 @@
 # chat/history_manager.py
-from rich.console import Console
 from rich.panel import Panel
 from rich.markdown import Markdown
 
