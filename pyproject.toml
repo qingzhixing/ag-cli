@@ -1,7 +1,7 @@
 [project]
 name = "ag-cli"
 version = "0.1.0"
-description = "Default template for PDM package"
+description = "agent-cli 多大语言模型命令行交互应用"
 authors = [{ name = "qingzhixing", email = "qzsqqmail@qq.com" }]
 dependencies = ["openai>=2.8.1", "python-dotenv>=1.2.1", "rich>=14.2.0"]
 requires-python = "==3.14.*"
@@ -13,4 +13,4 @@ license = { text = "MIT" }
 distribution = false
 
 [tool.pdm.scripts]
-ag-cli = "python src/ag-cli/main.py"
+ag = "python src/ag-cli/main.py"

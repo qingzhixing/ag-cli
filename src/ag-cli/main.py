@@ -27,7 +27,7 @@ def list_models():
 def main():
     """主函数"""
     parser = argparse.ArgumentParser(
-        description="DeepSeek AI Chat with Markdown Output"
+        description="Multi LLM Chat In Console.(Using DashScope API)"
     )
     parser.add_argument("question", nargs="*", help="Input question for AI")
     parser.add_argument(
