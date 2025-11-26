@@ -1,28 +1,65 @@
-import os
-import httpx
-from openai import OpenAI
-from dotenv import load_dotenv
+import argparse
+from api_client import DeepSeekClient
 
-load_dotenv()
 
-dashscope_api_key = os.getenv("DASHSCOPE_API_KEY")
-if not dashscope_api_key:
-    raise ValueError("DASHSCOPE_API_KEY not found in environment variables")
+def process_stream_response(stream):
+    """处理流式响应，直接输出内容"""
+    full_response = ""
 
-client = OpenAI(
-    api_key=dashscope_api_key,
-    # 以下是北京地域base_url，如果使用新加坡地域的模型，需要将base_url替换为：https://dashscope-intl.aliyuncs.com/compatible-mode/v1
-    base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-)
-try:
-    completion = client.chat.completions.create(
-        model="qwen-plus", messages=[{"role": "user", "content": "你是谁？"}]
+    for chunk in stream:
+        if (
+            hasattr(chunk.choices[0].delta, "content")
+            and chunk.choices[0].delta.content is not None
+        ):
+            content = chunk.choices[0].delta.content
+            print(content, end="", flush=True)  # 直接输出，无延迟
+            full_response += content
+
+    print()  # 最后换行
+    return full_response
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description="DeepSeek AI Chat with Streaming Output"
     )
-except httpx.HTTPStatusError as e:
-    if e.response.status_code == 401:
-        raise ValueError("DASHSCOPE_API_KEY is invalid")
-    elif e.response.status_code == 429:
-        raise ValueError("Rate limit exceeded") from e
+    parser.add_argument("--question", "-q", type=str, help="Input question for AI")
+    parser.add_argument(
+        "--model",
+        "-m",
+        type=str,
+        default=None,
+        help="Model name (default: deepseek-v3.1)",
+    )
+
+    args = parser.parse_args()
+
+    # 获取问题
+    if args.question:
+        question = args.question
     else:
-        raise e
-print(completion.choices[0].message.content)
+        question = input("请输入您的问题: ")
+
+    if not question.strip():
+        print("问题不能为空！")
+        return
+
+    # 初始化客户端
+    client = DeepSeekClient()
+
+    try:
+        print(f"问题: {question}")
+        print("回答: ", end="", flush=True)
+
+        # 获取流式响应
+        stream = client.stream_chat(question, model=args.model)
+
+        # 处理并显示响应
+        full_response = process_stream_response(stream)
+
+    except Exception as e:
+        print(f"\n错误: {str(e)}")
+
+
+if __name__ == "__main__":
+    main()
