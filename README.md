@@ -14,6 +14,11 @@ AG-CLI 是一个基于 Python 的命令行工具，支持与多个大语言模�
 
 ![Usage](./static/Usage.png)
 
+## 开发者的话
+
+本项目想法来自于 **蒋炎岩(jyy)** 老师 操作系统课程, 他的个人博客主页是 <https://jyywiki.cn/>.
+本项目绝大多数代码由 **deepseek** 生成, 仅进行关键的修改, 本人是Python小白.
+
 ## 环境要求
 
 - Python 3.14.*
@@ -146,7 +151,3 @@ python -m pdb src/main.py "测试问题"
 ## 许可证
 
 本项目采用 MIT 许可证。详见 [LICENSE](LICENSE) 文件。
-
-## Tips
-
-本项目绝大多数代码由**deepseek**生成
