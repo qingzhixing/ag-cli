@@ -10,10 +10,18 @@ def load_config():
     if not dashscope_api_key:
         raise ValueError("DASHSCOPE_API_KEY not found in environment variables")
 
+    # 模型名称映射
+    model_mapping = {
+        "v3.1": "deepseek-v3.1",
+        "r1": "deepseek-r1",
+        "q3m": "qwen3-max",
+    }
+
     config = {
         "api_key": dashscope_api_key,
         "base_url": "https://dashscope.aliyuncs.com/compatible-mode/v1",
-        "model": "deepseek-v3.1",
+        "default_model": "deepseek-v3.1",
+        "model_mapping": model_mapping,
     }
 
     return config
