@@ -5,7 +5,7 @@
 groups = ["default"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:39598031ae67828b9f7444150ea467bac9a8291271e8d1daaee42c623a6e2b15"
+content_hash = "sha256:644914a38563c6a3cd35201523229957b47b5e7e74d41f2c63a3934595b7e1c2"
 
 [[metadata.targets]]
 requires_python = "==3.14.*"
@@ -292,18 +292,6 @@ marker = "python_version == \"3.14\""
 files = [
     {file = "pygments-2.19.2-py3-none-any.whl", hash = "sha256:86540386c03d588bb81d44bc3928634ff26449851e99741617ecb9037ee5ec0b"},
     {file = "pygments-2.19.2.tar.gz", hash = "sha256:636cb2477cec7f8952536970bc533bc43743542f70392ae026374600add5b887"},
-]
-
-[[package]]
-name = "python-dotenv"
-version = "1.2.1"
-requires_python = ">=3.9"
-summary = "Read key-value pairs from a .env file and set them as environment variables"
-groups = ["default"]
-marker = "python_version == \"3.14\""
-files = [
-    {file = "python_dotenv-1.2.1-py3-none-any.whl", hash = "sha256:b81ee9561e9ca4004139c6cbba3a238c32b03e4894671e181b671e8cb8425d61"},
-    {file = "python_dotenv-1.2.1.tar.gz", hash = "sha256:42667e897e16ab0d66954af0e60a9caa94f0fd4ecf3aaf6d2d260eec1aa36ad6"},
 ]
 
 [[package]]
