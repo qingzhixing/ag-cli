@@ -2,6 +2,19 @@ import os
 from dotenv import load_dotenv
 
 
+def validate_config(config):
+    """验证配置"""
+    required_keys = ["api_key", "base_url", "default_model", "model_mapping"]
+    for key in required_keys:
+        if key not in config:
+            raise ValueError(f"Missing required config key: {key}")
+
+    if not config["api_key"]:
+        raise ValueError("API key cannot be empty")
+
+    return config
+
+
 def load_config():
     """加载配置文件和环境变量"""
     load_dotenv()
@@ -24,4 +37,4 @@ def load_config():
         "model_mapping": model_mapping,
     }
 
-    return config
+    return validate_config(config)

@@ -2,6 +2,20 @@ import httpx
 from openai import OpenAI
 from config import load_config
 from tenacity import retry, stop_after_attempt, wait_exponential
+import time
+from functools import wraps
+
+
+def timing_decorator(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"⏱️ {func.__name__} took {end_time - start_time:.2f} seconds")
+        return result
+
+    return wrapper
 
 
 class DeepSeekClient:
@@ -51,6 +65,7 @@ class DeepSeekClient:
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
+    @timing_decorator
     def chat_completion(self, messages, model=None):
         """支持对话历史的聊天接口"""
         try:
