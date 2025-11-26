@@ -4,7 +4,7 @@ from chat.history_manager import HistoryManager
 from chat.input_handler import get_user_input
 
 
-def continuous_chat(client, console, model=None):
+def continuous_chat(client, console, model=None, initial_question=None):
     """连续对话模式"""
     chat_interface = ChatInterface(client, console)
     history_manager = HistoryManager(chat_interface.system_prompt)
@@ -13,6 +13,35 @@ def continuous_chat(client, console, model=None):
     console.print("[bold]输入 '.exit' 结束对话[/bold]")
     console.print("[bold]输入 '.clear' 清空对话历史[/bold]")
     console.print("[bold]输入 '.history' 查看对话历史[/bold]\n")
+
+    # 如果有初始问题，先处理
+    if initial_question:
+        # 显示问题
+        chat_interface.display_question(initial_question)
+
+        # 添加到对话历史
+        history_manager.add_user_message(initial_question)
+
+        try:
+            # 获取管理后的历史并调用API
+            managed_history = history_manager.get_managed_history()
+            response = chat_interface.call_api_continuous(managed_history, model)
+
+            # 显示回答
+            chat_interface.display_response(response)
+
+            if response:
+                # 将AI回复添加到对话历史
+                history_manager.add_assistant_message(response)
+
+        except Exception as e:
+            console.print(f"[red]✖️ API调用错误: {str(e)}[/red]")
+            # 移除最后一条用户消息，因为处理失败了
+            if (
+                history_manager.conversation_history
+                and history_manager.conversation_history[-1]["role"] == "user"
+            ):
+                history_manager.conversation_history.pop()
 
     while True:
         try:
@@ -24,6 +53,9 @@ def continuous_chat(client, console, model=None):
 
             if not user_input or not user_input.strip():
                 continue  # 跳过空输入
+
+            # 显示问题
+            chat_interface.display_question(user_input)
 
             # 添加到对话历史
             history_manager.add_user_message(user_input)

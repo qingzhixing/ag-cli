@@ -1,6 +1,7 @@
 import httpx
 from openai import OpenAI
 from config import load_config
+from tenacity import retry, stop_after_attempt, wait_exponential
 
 
 class DeepSeekClient:
@@ -47,6 +48,9 @@ class DeepSeekClient:
         except Exception as e:
             raise Exception(f"API request failed: {str(e)}")
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
     def chat_completion(self, messages, model=None):
         """支持对话历史的聊天接口"""
         try:

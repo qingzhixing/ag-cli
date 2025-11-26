@@ -42,15 +42,9 @@ def main():
 
     # 判断是否启用连续对话
     if args.continuous or not args.question:
-        # 命令行有 -c 参数，或者没有提供问题（交互式输入），都进入连续对话
-        if args.question:
-            # 如果有命令行问题，先处理第一个问题
-            first_question = " ".join(args.question)
-            single_chat(client, console, first_question, args.model)
-            console.print("\n" + "=" * 50 + "\n")
-
-        # 进入连续对话模式
-        continuous_chat(client, console, args.model)
+        # 连续对话模式
+        initial_question = " ".join(args.question) if args.question else None
+        continuous_chat(client, console, args.model, initial_question)
     else:
         # 单次对话模式
         question = " ".join(args.question)
