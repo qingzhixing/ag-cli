@@ -1,7 +1,6 @@
 import os
 import json
 from pathlib import Path
-from dotenv import load_dotenv
 from rich.console import Console
 
 console = Console()
@@ -31,7 +30,7 @@ def validate_config(config):
 
 def load_config():
     """加载配置文件和环境变量"""
-    # 优先级：1. 系统环境变量 2. 配置文件 3. .env文件
+    # 优先级：1. 系统环境变量 2. 配置文件
 
     # 1. 检查系统环境变量
     dashscope_api_key = os.getenv("DASHSCOPE_API_KEY")
@@ -42,18 +41,15 @@ def load_config():
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 config_data = json.load(f)
                 dashscope_api_key = config_data.get("api_key", "")
-        except Exception:
-            pass
-
-    # 3. 检查.env文件（仅开发环境）
-    if not dashscope_api_key:
-        load_dotenv()
-        dashscope_api_key = os.getenv("DASHSCOPE_API_KEY")
+        except Exception as e:
+            console.print(f"[yellow]⚠️ 读取配置文件失败: {str(e)}[/yellow]")
 
     if not dashscope_api_key:
         console.print(
             "[red]✖️ 未找到API密钥，请使用 'ag config set --api-key <your-key>' 设置[/red]"
         )
+        console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
+        console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
         exit(1)
 
     # 模型名称映射
@@ -101,8 +97,8 @@ def get_api_key() -> str:
             with open(CONFIG_FILE, "r", encoding="utf-8") as f:
                 config_data = json.load(f)
                 api_key = config_data.get("api_key", "")
-        except Exception:
-            pass
+        except Exception as e:
+            console.print(f"[yellow]⚠️ 读取配置文件失败: {str(e)}[/yellow]")
 
     return api_key
 
