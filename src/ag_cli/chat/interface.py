@@ -97,36 +97,14 @@ class ChatInterface:
         """单次API调用 - 动态流式输出"""
         question_with_lang = question + self.system_prompt
 
-        # 获取流式响应（不显示思考中）
-        actual_model = (
-            self.client.resolve_model_name(model)
-            if model
-            else self.client.config["default_model"]
-        )
-
-        response = self.client.client.chat.completions.create(
-            model=actual_model,
-            messages=[{"role": "user", "content": question_with_lang}],
-            stream=True,
-        )
+        response_stream = self.client.get_chat_stream(question_with_lang, model)
 
         # 动态显示流式响应
-        return self.display_streaming_response(response)
+        return self.display_streaming_response(response_stream)
 
     def call_api_continuous(self, messages, model=None):
         """连续对话API调用 - 动态流式输出"""
-        # 获取流式响应（不显示思考中）
-        actual_model = (
-            self.client.resolve_model_name(model)
-            if model
-            else self.client.config["default_model"]
-        )
-
-        response = self.client.client.chat.completions.create(
-            model=actual_model,
-            messages=messages,
-            stream=True,
-        )
+        response_stream = self.client.get_chat_completion_stream(messages, model)
 
         # 动态显示流式响应
-        return self.display_streaming_response(response)
+        return self.display_streaming_response(response_stream)

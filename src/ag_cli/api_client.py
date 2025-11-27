@@ -12,7 +12,7 @@ def timing_decorator(func):
         start_time = time.time()
         result = func(*args, **kwargs)
         end_time = time.time()
-        print(f"⏱️ {func.__name__} took {end_time - start_time:.2f} seconds")
+        print(f"⏱️  {func.__name__} took {end_time - start_time:.2f} seconds")
         return result
 
     return wrapper
@@ -36,12 +36,12 @@ class DeepSeekClient:
             # 如果不是代称，直接使用传入的值
             return model_alias
 
+    @timing_decorator
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    @timing_decorator
-    def chat(self, message, model=None):
-        """流式聊天接口 - 单次对话"""
+    def get_chat_stream(self, message, model=None):
+        """获取流式聊天响应对象"""
         try:
             # 解析模型名称
             actual_model = (
@@ -50,21 +50,12 @@ class DeepSeekClient:
                 else self.config["default_model"]
             )
 
-            response = self.client.chat.completions.create(
+            return self.client.chat.completions.create(
                 model=actual_model,
                 messages=[{"role": "user", "content": message}],
                 stream=True,
             )
 
-            # 收集流式响应
-            full_response = ""
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    full_response += content
-
-            return full_response
-
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 raise ValueError("DASHSCOPE_API_KEY is invalid")
@@ -75,12 +66,12 @@ class DeepSeekClient:
         except Exception as e:
             raise Exception(f"API request failed: {str(e)}")
 
+    @timing_decorator
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
-    @timing_decorator
-    def chat_completion(self, messages, model=None):
-        """支持对话历史的流式聊天接口"""
+    def get_chat_completion_stream(self, messages, model=None):
+        """获取支持对话历史的流式聊天响应对象"""
         try:
             # 解析模型名称
             actual_model = (
@@ -89,20 +80,11 @@ class DeepSeekClient:
                 else self.config["default_model"]
             )
 
-            response = self.client.chat.completions.create(
+            return self.client.chat.completions.create(
                 model=actual_model,
                 messages=messages,
                 stream=True,
             )
-
-            # 收集流式响应
-            full_response = ""
-            for chunk in response:
-                if chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    full_response += content
-
-            return full_response
 
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
@@ -113,3 +95,24 @@ class DeepSeekClient:
                 raise e
         except Exception as e:
             raise Exception(f"API request failed: {str(e)}")
+
+    # 保留原有的非流式方法（向后兼容）
+    def chat(self, message, model=None):
+        """流式聊天接口 - 单次对话（收集完整响应）"""
+        stream = self.get_chat_stream(message, model)
+        full_response = ""
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                content = chunk.choices[0].delta.content
+                full_response += content
+        return full_response
+
+    def chat_completion(self, messages, model=None):
+        """支持对话历史的流式聊天接口（收集完整响应）"""
+        stream = self.get_chat_completion_stream(messages, model)
+        full_response = ""
+        for chunk in stream:
+            if chunk.choices[0].delta.content:
+                content = chunk.choices[0].delta.content
+                full_response += content
+        return full_response
