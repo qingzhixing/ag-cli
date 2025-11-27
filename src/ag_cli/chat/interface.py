@@ -11,7 +11,7 @@ class ChatInterface:
     def __init__(self, client, console):
         self.client = client
         self.console = console
-        self.system_prompt = "(如果我未指定语言，默认使用中文进行回答)"
+        self.system_prompt = "(如果未指定语言，回复答案时请使用中文语言)"
 
     def display_question(self, question):
         """显示问题"""
