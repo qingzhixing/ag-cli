@@ -36,6 +36,10 @@ class DeepSeekClient:
             # 如果不是代称，直接使用传入的值
             return model_alias
 
+    @retry(
+        stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
+    )
+    @timing_decorator
     def chat(self, message, model=None):
         """流式聊天接口 - 单次对话"""
         try:

@@ -3,6 +3,7 @@ from rich.panel import Panel
 from rich.markdown import Markdown
 from rich.live import Live
 import re
+import time
 
 
 class ChatInterface:
@@ -24,20 +25,52 @@ class ChatInterface:
         )
 
     def display_streaming_response(self, response_stream):
-        """动态显示流式AI回复"""
+        """动态显示流式AI回复 - 优化Markdown版本"""
         self.console.print("\n[bold green]🤖:[/bold green]")
 
         full_response = ""
-        with Live(refresh_per_second=10) as live:
-            for chunk in response_stream:
-                if chunk.choices[0].delta.content:
-                    content = chunk.choices[0].delta.content
-                    full_response += content
+        last_update_time = time.time()
+        update_interval = 0.3  # 降低刷新率到300毫秒
+        chunk_buffer = ""  # 缓冲区，累积一定内容再更新
 
-                    # 动态更新Markdown显示
+        # 优化Live配置：增加缓冲区大小，降低刷新率
+        with Live(refresh_per_second=5, auto_refresh=False) as live:
+            try:
+                for chunk in response_stream:
+                    if chunk.choices and chunk.choices[0].delta.content:
+                        content = chunk.choices[0].delta.content
+                        full_response += content
+                        chunk_buffer += content
+
+                        # 累积一定内容或达到时间间隔才更新
+                        current_time = time.time()
+                        if (
+                            current_time - last_update_time >= update_interval
+                            or len(chunk_buffer) >= 100
+                        ):  # 累积100字符或达到时间间隔
+                            # 预处理并显示Markdown
+                            processed_response = self._preprocess_response(
+                                full_response
+                            )
+                            markdown = Markdown(processed_response)
+                            live.update(markdown, refresh=True)
+
+                            # 重置计时器和缓冲区
+                            last_update_time = current_time
+                            chunk_buffer = ""
+
+                # 流式响应结束后，确保显示完整内容
+                processed_response = self._preprocess_response(full_response)
+                markdown = Markdown(processed_response)
+                live.update(markdown, refresh=True)
+
+            except Exception as e:
+                # 如果流式响应出现错误，显示当前已收集的内容
+                self.console.print(f"[yellow]⚠️ 流式响应中断: {str(e)}[/yellow]")
+                if full_response:
                     processed_response = self._preprocess_response(full_response)
                     markdown = Markdown(processed_response)
-                    live.update(markdown)
+                    live.update(markdown, refresh=True)
 
         return full_response
 
