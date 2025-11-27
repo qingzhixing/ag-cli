@@ -92,7 +92,7 @@ def single_chat(client, console, question, model=None):
         chat_interface.display_question(question)
 
         # 调用API并动态显示结果
-        response = chat_interface.call_api_single(question, model)
+        chat_interface.call_api_single(question, model)
 
     except Exception as e:
         console.print(f"[red]✖️ 错误: {str(e)}[/red]")

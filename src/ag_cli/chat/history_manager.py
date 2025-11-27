@@ -1,4 +1,5 @@
 # chat/history_manager.py
+import math
 from rich.panel import Panel
 from rich.markdown import Markdown
 
@@ -50,13 +51,15 @@ class HistoryManager:
                 console.print(
                     Panel.fit(
                         f"[bold cyan]{msg['content']}[/bold cyan]",
-                        title=f"[bold blue]第{i}轮 - 用户问题[/bold blue]",
+                        title=f"[bold blue]😎 第{math.ceil(i / 2)}轮 - 用户问题[/bold blue]",
                         border_style="blue",
                     )
                 )
             else:
                 # AI回复使用Markdown
-                console.print(f"\n[bold green]🤖 第{i}轮回复:[/bold green]")
+                console.print(
+                    f"\n[bold green]🤖 第{math.ceil(i / 2)}轮回复:[/bold green]"
+                )
                 markdown = Markdown(msg["content"])
                 console.print(markdown)
             console.print()  # 空行分隔

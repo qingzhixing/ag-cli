@@ -1,6 +1,10 @@
 # chat/input_handler.py
 def get_user_input(console, history_manager):
     """获取用户输入，处理特殊命令"""
+    # 提示用户打印以'.'独立一行结束多行输入
+    console.print(
+        "\n[dim ][blue ]Tips[/blue ]: '.' in a line to end multi-line input.[/dim ]"
+    )
     console.print("[bold cyan]😎:[/bold cyan] ", end="")
     lines = []
 
