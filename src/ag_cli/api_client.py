@@ -37,7 +37,7 @@ class DeepSeekClient:
             return model_alias
 
     def chat(self, message, model=None):
-        """非流式聊天接口 - 单次对话"""
+        """流式聊天接口 - 单次对话"""
         try:
             # 解析模型名称
             actual_model = (
@@ -49,9 +49,18 @@ class DeepSeekClient:
             response = self.client.chat.completions.create(
                 model=actual_model,
                 messages=[{"role": "user", "content": message}],
-                stream=False,
+                stream=True,
             )
-            return response.choices[0].message.content
+
+            # 收集流式响应
+            full_response = ""
+            for chunk in response:
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+
+            return full_response
+
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 raise ValueError("DASHSCOPE_API_KEY is invalid")
@@ -67,7 +76,7 @@ class DeepSeekClient:
     )
     @timing_decorator
     def chat_completion(self, messages, model=None):
-        """支持对话历史的聊天接口"""
+        """支持对话历史的流式聊天接口"""
         try:
             # 解析模型名称
             actual_model = (
@@ -79,9 +88,18 @@ class DeepSeekClient:
             response = self.client.chat.completions.create(
                 model=actual_model,
                 messages=messages,
-                stream=False,
+                stream=True,
             )
-            return response.choices[0].message.content
+
+            # 收集流式响应
+            full_response = ""
+            for chunk in response:
+                if chunk.choices[0].delta.content:
+                    content = chunk.choices[0].delta.content
+                    full_response += content
+
+            return full_response
+
         except httpx.HTTPStatusError as e:
             if e.response.status_code == 401:
                 raise ValueError("DASHSCOPE_API_KEY is invalid")

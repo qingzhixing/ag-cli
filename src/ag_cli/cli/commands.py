@@ -23,13 +23,12 @@ def continuous_chat(client, console, model=None, initial_question=None):
         history_manager.add_user_message(initial_question)
 
         try:
-            # 获取管理后的历史并调用API
-            managed_history = history_manager.get_managed_history()
-            response = chat_interface.call_api_continuous(managed_history, model)
+            # 调用API并动态显示结果
+            response = chat_interface.call_api_continuous(
+                history_manager.get_managed_history(), model
+            )
 
             # 显示回答
-            chat_interface.display_response(response)
-
             if response:
                 # 将AI回复添加到对话历史
                 history_manager.add_assistant_message(response)
@@ -61,12 +60,10 @@ def continuous_chat(client, console, model=None, initial_question=None):
             history_manager.add_user_message(user_input)
 
             try:
-                # 获取管理后的历史并调用API
-                managed_history = history_manager.get_managed_history()
-                response = chat_interface.call_api_continuous(managed_history, model)
-
-                # 显示回答
-                chat_interface.display_response(response)
+                # 调用API并动态显示结果
+                response = chat_interface.call_api_continuous(
+                    history_manager.get_managed_history(), model
+                )
 
                 if response:
                     # 将AI回复添加到对话历史
@@ -94,9 +91,8 @@ def single_chat(client, console, question, model=None):
         # 显示问题
         chat_interface.display_question(question)
 
-        # 调用API并显示结果
+        # 调用API并动态显示结果
         response = chat_interface.call_api_single(question, model)
-        chat_interface.display_response(response)
 
     except Exception as e:
         console.print(f"[red]✖️ 错误: {str(e)}[/red]")
