@@ -42,12 +42,11 @@ class HistoryManager:
         """获取管理后的对话历史（防止过长）"""
         return manage_context(self.conversation_history)
 
-    def display_history(self, console):
-        """显示对话历史 - 美观的版本"""
+    def display_history(self, console, use_pretty=True):
+        """显示对话历史"""
         console.print("\n[bold yellow]📜 对话历史:[/bold yellow]")
-        for i, msg in enumerate(self.conversation_history[1:], 1):  # 跳过系统消息
+        for i, msg in enumerate(self.conversation_history[1:], 1):
             if msg["role"] == "user":
-                # 用户消息使用Panel
                 console.print(
                     Panel.fit(
                         f"[bold cyan]{msg['content']}[/bold cyan]",
@@ -56,10 +55,12 @@ class HistoryManager:
                     )
                 )
             else:
-                # AI回复使用Markdown
                 console.print(
-                    f"\n[bold green]🤖 第{math.ceil(i / 2)}轮回复:[/bold green]"
+                    f"[bold green]🤖 第{math.ceil(i / 2)}轮回复:[/bold green]"
                 )
-                markdown = Markdown(msg["content"])
-                console.print(markdown)
-            console.print()  # 空行分隔
+                if use_pretty:
+                    markdown = Markdown(msg["content"])
+                    console.print(markdown)
+                else:
+                    console.print(msg["content"])
+            console.print()

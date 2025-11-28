@@ -44,6 +44,20 @@ def main():
         help="Enable continuous conversation mode",
     )
 
+    # 美化输出选项组
+    pretty_group = parser.add_mutually_exclusive_group()
+    pretty_group.add_argument(
+        "--pretty",
+        "-p",
+        action="store_true",
+        help="启用美化输出（响应时间、问题展示、Markdown渲染）",
+    )
+    pretty_group.add_argument(
+        "--no-pretty",
+        action="store_true",
+        help="禁用美化输出（纯文本模式，适合重定向到文件）",
+    )
+
     # 配置管理选项
     config_group = parser.add_argument_group("配置管理")
     config_group.add_argument(
@@ -77,9 +91,19 @@ def main():
         list_models()
         return
 
+    # 确定美化模式
+    if args.no_pretty:
+        use_pretty = False
+    elif args.pretty:
+        use_pretty = True
+    else:
+        # 默认行为：连续对话启用美化，单次对话禁用美化
+        use_pretty = args.continuous or not args.question
+
     # 主聊天功能
     try:
-        client = DeepSeekClient()
+        # 创建API客户端时传递美化模式参数
+        client = DeepSeekClient(use_pretty=use_pretty)
     except ValueError as e:
         # 处理缺少API密钥的情况
         console.print(f"[red]✖️ {str(e)}[/red]")
@@ -91,11 +115,11 @@ def main():
     if args.continuous or not args.question:
         # 连续对话模式
         initial_question = " ".join(args.question) if args.question else None
-        continuous_chat(client, console, args.model, initial_question)
+        continuous_chat(client, console, args.model, initial_question, use_pretty)
     else:
         # 单次对话模式
         question = " ".join(args.question)
-        single_chat(client, console, question, args.model)
+        single_chat(client, console, question, args.model, use_pretty)
 
 
 if __name__ == "__main__":

@@ -25,11 +25,6 @@ install = { cmd = "python scripts/install.py", help = "安装项目" }
 build = { cmd = "pdm build", help = "构建包" }
 clean = { cmd = "rmdir /s /q dist build *.egg-info 2>nul || rm -rf dist build *.egg-info", help = "清理构建文件" }
 
-# 开发测试脚本
-ag-test-arg-single = "pdm ag 5line c++ solving a+b problem"
-ag-test-arg-continues = "pdm ag -c 5line c++ solving a+b problem"
-ag-test-inner = "pdm ag"
-
 # 添加构建系统配置
 [build-system]
 requires = ["pdm-backend"]

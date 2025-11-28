@@ -4,9 +4,11 @@ from ag_cli.chat.history_manager import HistoryManager
 from ag_cli.chat.input_handler import get_user_input
 
 
-def continuous_chat(client, console, model=None, initial_question=None):
+def continuous_chat(
+    client, console, model=None, initial_question=None, use_pretty=True
+):
     """连续对话模式"""
-    chat_interface = ChatInterface(client, console)
+    chat_interface = ChatInterface(client, console, use_pretty)
     history_manager = HistoryManager(chat_interface.system_prompt)
 
     console.print("[bold]输入 '.' 单独一行结束多行输入[/bold]")
@@ -45,7 +47,9 @@ def continuous_chat(client, console, model=None, initial_question=None):
     while True:
         try:
             # 获取用户输入
-            user_input, should_exit = get_user_input(console, history_manager)
+            user_input, should_exit = get_user_input(
+                console, history_manager, use_pretty
+            )
 
             if should_exit:
                 return  # 退出对话
@@ -83,19 +87,21 @@ def continuous_chat(client, console, model=None, initial_question=None):
             break
 
 
-def single_chat(client, console, question, model=None):
+def single_chat(client, console, question, model=None, use_pretty=True):
     """单次对话模式"""
-    chat_interface = ChatInterface(client, console)
+    chat_interface = ChatInterface(client, console, use_pretty)
 
     try:
-        # 显示问题
-        chat_interface.display_question(question)
+        # 显示问题(美化模式下才显示)
+        if use_pretty:
+            chat_interface.display_question(question)
 
-        # 调用API并动态显示结果
+        # 调用API并显示结果
         chat_interface.call_api_single(question, model)
 
     except Exception as e:
         console.print(f"[red]✖️ 错误: {str(e)}[/red]")
+
 
 def config_command(args):
     """配置管理命令"""

@@ -6,25 +6,35 @@ import time
 from functools import wraps
 
 
-def timing_decorator(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        print(f"⏱️  {func.__name__} took {end_time - start_time:.2f} seconds")
-        return result
+def timing_decorator(use_pretty=True):
+    """响应时间装饰器，根据美化模式控制是否显示响应时间"""
 
-    return wrapper
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+
+            # 只在美化模式下显示响应时间
+            if use_pretty:
+                print(f"⏱️  响应时间: {end_time - start_time:.2f} seconds")
+
+            return result
+
+        return wrapper
+
+    return decorator
 
 
 class DeepSeekClient:
-    def __init__(self):
+    def __init__(self, use_pretty=True):
         self.config = load_config()
         self.client = OpenAI(
             api_key=self.config["api_key"],
             base_url=self.config["base_url"],
         )
+        self.use_pretty = use_pretty
 
     def resolve_model_name(self, model_alias):
         """将模型代称解析为实际模型名称"""
@@ -36,65 +46,75 @@ class DeepSeekClient:
             # 如果不是代称，直接使用传入的值
             return model_alias
 
-    @timing_decorator
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     def get_chat_stream(self, message, model=None):
         """获取流式聊天响应对象"""
-        try:
-            # 解析模型名称
-            actual_model = (
-                self.resolve_model_name(model)
-                if model
-                else self.config["default_model"]
-            )
 
-            return self.client.chat.completions.create(
-                model=actual_model,
-                messages=[{"role": "user", "content": message}],
-                stream=True,
-            )
+        # 应用装饰器，传递美化模式
+        @timing_decorator(self.use_pretty)
+        def _get_chat_stream():
+            try:
+                # 解析模型名称
+                actual_model = (
+                    self.resolve_model_name(model)
+                    if model
+                    else self.config["default_model"]
+                )
 
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 401:
-                raise ValueError("DASHSCOPE_API_KEY is invalid")
-            elif e.response.status_code == 429:
-                raise ValueError("Rate limit exceeded")
-            else:
-                raise e
-        except Exception as e:
-            raise Exception(f"API request failed: {str(e)}")
+                return self.client.chat.completions.create(
+                    model=actual_model,
+                    messages=[{"role": "user", "content": message}],
+                    stream=True,
+                )
 
-    @timing_decorator
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 401:
+                    raise ValueError("DASHSCOPE_API_KEY is invalid")
+                elif e.response.status_code == 429:
+                    raise ValueError("Rate limit exceeded")
+                else:
+                    raise e
+            except Exception as e:
+                raise Exception(f"API request failed: {str(e)}")
+
+        return _get_chat_stream()
+
     @retry(
         stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10)
     )
     def get_chat_completion_stream(self, messages, model=None):
         """获取支持对话历史的流式聊天响应对象"""
-        try:
-            # 解析模型名称
-            actual_model = (
-                self.resolve_model_name(model)
-                if model
-                else self.config["default_model"]
-            )
 
-            return self.client.chat.completions.create(
-                model=actual_model,
-                messages=messages,
-                stream=True,
-            )
+        # 应用装饰器，传递美化模式
+        @timing_decorator(self.use_pretty)
+        def _get_chat_completion_stream():
+            try:
+                # 解析模型名称
+                actual_model = (
+                    self.resolve_model_name(model)
+                    if model
+                    else self.config["default_model"]
+                )
 
-        except httpx.HTTPStatusError as e:
-            if e.response.status_code == 401:
-                raise ValueError("DASHSCOPE_API_KEY is invalid")
-            elif e.response.status_code == 429:
-                raise ValueError("Rate limit exceeded")
-            else:
-                raise e
-        except Exception as e:
-            raise Exception(f"API request failed: {str(e)}")
+                return self.client.chat.completions.create(
+                    model=actual_model,
+                    messages=messages,
+                    stream=True,
+                )
+
+            except httpx.HTTPStatusError as e:
+                if e.response.status_code == 401:
+                    raise ValueError("DASHSCOPE_API_KEY is invalid")
+                elif e.response.status_code == 429:
+                    raise ValueError("Rate limit exceeded")
+                else:
+                    raise e
+            except Exception as e:
+                raise Exception(f"API request failed: {str(e)}")
+
+        return _get_chat_completion_stream()
 
     # 保留原有的非流式方法（向后兼容）
     def chat(self, message, model=None):
