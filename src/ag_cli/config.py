@@ -28,6 +28,7 @@ def validate_config(config):
     return config
 
 
+# 修改load_config函数，将exit(1)改为抛出异常
 def load_config():
     """加载配置文件和环境变量"""
     # 优先级：1. 系统环境变量 2. 配置文件
@@ -45,12 +46,10 @@ def load_config():
             console.print(f"[yellow]⚠️ 读取配置文件失败: {str(e)}[/yellow]")
 
     if not dashscope_api_key:
-        console.print(
-            "[red]✖️ 未找到API密钥，请使用 'ag config set --api-key <your-key>' 设置[/red]"
+        # 抛出异常而不是直接退出
+        raise ValueError(
+            "未找到API密钥，请使用 'ag --config set --api-key <your-key>' 设置"
         )
-        console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
-        console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
-        exit(1)
 
     # 模型名称映射
     model_mapping = {

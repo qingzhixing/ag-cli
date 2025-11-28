@@ -1,9 +1,10 @@
-# main.py
+# 修改main.py，处理load_config抛出的异常
 import argparse
 from .api_client import DeepSeekClient
 from rich.console import Console
 from .utils.models import list_models
 from .cli.commands import continuous_chat, single_chat
+from .config import get_config_dir_path, get_config_file_path
 
 
 def config_handler(args):
@@ -77,7 +78,14 @@ def main():
         return
 
     # 主聊天功能
-    client = DeepSeekClient()
+    try:
+        client = DeepSeekClient()
+    except ValueError as e:
+        # 处理缺少API密钥的情况
+        console.print(f"[red]✖️ {str(e)}[/red]")
+        console.print(f"[cyan]📁 配置目录: {get_config_dir_path()}[/cyan]")
+        console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
+        return
 
     # 判断是否启用连续对话
     if args.continuous or not args.question:

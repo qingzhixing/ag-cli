@@ -97,7 +97,6 @@ def single_chat(client, console, question, model=None):
     except Exception as e:
         console.print(f"[red]✖️ 错误: {str(e)}[/red]")
 
-
 def config_command(args):
     """配置管理命令"""
     from ag_cli.config import (
@@ -124,7 +123,7 @@ def config_command(args):
         console.print(f"[cyan]📄 配置文件: {get_config_file_path()}[/cyan]")
 
     elif args.action == "get":
-        api_key = get_api_key()
+        api_key = get_api_key()  # 替换为get_api_key
         if api_key:
             # 显示部分密钥，保护敏感信息
             masked_key = api_key[:8] + "*" * (len(api_key) - 12) + api_key[-4:]
